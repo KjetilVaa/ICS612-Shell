@@ -16,7 +16,7 @@ int main(int argc, char **argv)
         type_prompt();  /*display prompt on the screen */
         get_input(input_line, CL_MAX);
         
-        //read_command(command, parameters);  read input from terminal
+         
         /*
         if (fork() != 0){ // fork off child process
             // Parent code

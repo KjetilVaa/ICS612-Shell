@@ -3,19 +3,12 @@
 #include <string.h>
 #include <shell_functions.h>
 #include <unistd.h>
-#include <readline/readline.h>
-#include <readline/history.h>
 
 void type_prompt(){
     printf("$ ");
 };
 
-void read_command(const char *command, char *const parameters[]) {
-    printf("hei");
-};
-
-void get_input(char *input_line, int MAX)
-{
+void get_input(char *input_line, int MAX){
     char *str;
     str = fgets(input_line, MAX, stdin);
     
@@ -27,3 +20,29 @@ void get_input(char *input_line, int MAX)
         }
     };
 };
+
+void execute_command(struct Words input_words){
+    // exit if exit is typed in terminal
+    if (input_words.size == 1 && !(strcmp("exit", input_words.words[0]))){
+        exit(0);
+    }
+    
+    for(int i; i < input_words.size; i++ ) {
+        printf("%s\n", input_words.words[i]);
+        if( !(strcmp(">", input_words.words[i])) ) {
+            //do
+        }
+        else if( !(strcmp("<", input_words.words[i])) ) {
+            //do
+        }
+        else if( !(strcmp("|", input_words.words[i])) ) {
+            //do
+        }
+        else if( !(strcmp("&", input_words.words[i])) ) {
+            //do
+        }
+    };
+
+};
+
+
