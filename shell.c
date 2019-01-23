@@ -6,19 +6,20 @@
 #include <sys/wait.h>
 
 #define TRUE 1
+#define CL_MAX 10
 
-int main()
+int main(int argc, char **argv)
 {
     while (TRUE){ /* repeat forever */
         type_prompt();  /*display prompt on the screen */
         
-        char *command; /*skal endres*/
+        char input_line[CL_MAX]; /*skal endres*/
         char *const parameters[50];
         int status;
         
         
         
-        get_input(command);
+        get_input(input_line, CL_MAX);
         
         
         //read_command(command, parameters);  read input from terminal

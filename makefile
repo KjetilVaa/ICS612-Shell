@@ -1,2 +1,5 @@
-my_shell: shell.c shell_functions.c
-	gcc -o my_shell shell.c shell_functions.c -I.
+CC=gcc
+CFLAGS=-I.
+
+my_shell: shell.o shell_functions.o
+	$(CC) -o my_shell shell.o shell_functions.o
