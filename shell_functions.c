@@ -14,20 +14,16 @@ void read_command(const char *command, char *const parameters[]) {
     printf("hei");
 };
 
-// add error if input_line > 1000
 void get_input(char *input_line, int MAX)
 {
+    char *str;
+    str = fgets(input_line, MAX, stdin);
     
-    fgets(input_line, MAX, stdin);
-    size_t n = sizeof(input_line) / sizeof(input_line[0]);
-    
-    printf("%zu\n", n);
-    if (n > MAX)
-    {
-        printf("Size of command line input must be less than 1000 characters");
-        exit(0);
-    }
-    printf("Glad to meet you, %s", input_line);
-
-    
+    if (str != NULL){
+        // Give error input line does not end with new line
+        if (input_line[strlen(input_line)-1] != '\n') {
+            printf("ERROR: Size of command line input must be less than 1000 characters\n");
+            exit(0);
+        }
+    };
 };
