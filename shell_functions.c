@@ -17,7 +17,10 @@ void get_input(char *input_line, int MAX){
         if (input_line[strlen(input_line)-1] != '\n') {
             printf("ERROR: Size of command line input must be less than 1000 characters\n");
             exit(0);
-        }
+        };
+    }
+    else {
+        input_line = NULL;
     };
 };
 
@@ -45,4 +48,17 @@ void execute_command(struct Words input_words){
 
 };
 
-
+struct Words parser(char* input_line){
+    struct Words input_words;
+    int index = 0;
+    char* token = strtok(input_line, " ");
+    while(token != NULL){
+        printf("%s\n", "nu");
+        input_words.words[index] = token;
+        input_words.size++;
+        index++;
+        token = strtok(NULL, " ");
+    }
+    input_words.size = input_words.size - 3;
+    return input_words;
+}

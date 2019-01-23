@@ -12,3 +12,6 @@ void get_input(char *input_line, int MAX);
 // Unfinished - executes the commands given from the terminal
 void execute_command(struct Words words);
 
+// Parsing command line input into words
+struct Words parser(char *input_line);
+
