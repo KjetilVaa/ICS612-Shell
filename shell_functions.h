@@ -25,3 +25,5 @@ void execute_command(struct Words words, bool flag);
 
 // Handles pipes
 bool execute_pipe(struct Words words, int pipe_index);
+
+bool execute_lcroc(struct Words words, int croc_index);
