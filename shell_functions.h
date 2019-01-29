@@ -21,3 +21,5 @@ void execute_command(struct Words words);
 
 // Parsing command line input into words
 struct Words parser(char *input_line);
+
+char* last_char_del(char* str);
