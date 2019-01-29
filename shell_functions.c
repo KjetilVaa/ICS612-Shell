@@ -13,26 +13,6 @@ void type_prompt(){
     printf("$ ");
 };
 
-void execute_systemcall(struct Words input_words) {
-    input_words.words[input_words.size] = 0;
-    execvp(input_words.words[0], input_words.words);
-
-    /*pid_t pid = fork();
-    if (pid == -1){
-        printf("Forking child failed\n");
-        return;
-    } else if (pid == 0) {
-        input_words.words[input_words.size] = 0;
-        if (execvp(input_words.words[0], input_words.words) > 0) {
-            printf("System call failed\n");
-        }
-        exit(0);
-    } else {
-        wait(NULL);
-    }
-    */
-}
-
 void get_input(char *input_line, int MAX){
     char *str;
     str = fgets(input_line, MAX, stdin);
@@ -50,11 +30,34 @@ void get_input(char *input_line, int MAX){
         };
         struct Words input_words1;
         input_words1 = parser(input_line);
-        execute_command(input_words1);
+        execute_command(input_words1, 1);
     };
 };
 
-void execute_command(struct Words input_words){
+void execute_systemcall(struct Words input_words, bool flag) {
+    // If forking is needed
+    if (flag){
+        pid_t pid = fork();
+        if (pid == -1){
+            printf("Forking child failed\n");
+            return;
+        } else if (pid == 0) {
+            input_words.words[input_words.size] = 0;
+            if (execvp(input_words.words[0], input_words.words) > 0) {
+                printf("System call failed\n");
+            }
+            exit(0);
+        } else {
+            wait(NULL);
+        }
+    // If no forking is needed
+    } else {
+        input_words.words[input_words.size] = 0;
+        execvp(input_words.words[0], input_words.words);
+    }
+}
+
+void execute_command(struct Words input_words, bool flag){
     // exit if exit is typed in terminal
     if (input_words.size == 1 && !(strcmp("exit\n", input_words.words[0]))){
         printf("You wrote exit so the shell terminates\n");
@@ -84,7 +87,7 @@ void execute_command(struct Words input_words){
     }
 
     if (!found_keyword){
-        execute_systemcall(input_words);
+        execute_systemcall(input_words, flag);
     }
     
 };
@@ -141,7 +144,7 @@ bool execute_pipe(struct Words words, int pipe_index){
             index++;
             new_input.size = index;
         }
-        execute_command(new_input);
+        execute_command(new_input, 0);
     }
     else {
 
@@ -164,7 +167,7 @@ bool execute_pipe(struct Words words, int pipe_index){
                 index++;
                 new_input.size = index;
             }
-            execute_command(new_input);
+            execute_command(new_input, 0);
         }
         else{
             close(fd[0]);
