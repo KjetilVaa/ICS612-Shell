@@ -70,6 +70,7 @@ void execute_command(struct Words input_words){
 };
 
 struct Words parser(char* input_line){
+    printf("Parsing: %s", input_line);
     struct Words input_words;
     int index = 0;
     char* token = strtok(input_line, " ");
@@ -99,6 +100,7 @@ bool execute_pipe(struct Words words, int pipe_index){
         printf("One of the two pipes failed.\n");
         return 0;
     }
+
     fflush(stdout);
     c1 = fork();
     if (c1 < 0){
@@ -108,16 +110,49 @@ bool execute_pipe(struct Words words, int pipe_index){
 
     if (c1 == 0){
         //Child executing
-        printf("Child executing! \n");
-        for (int i = 0; i++; i < pipe_index){
-            printf("%s\n", words.words[i]);
+        close(fd[0]); 
+        dup2(fd[1], STDOUT_FILENO); 
+        close(fd[1]);
+        //Run subcommand
+        struct Words new_input;
+        int index = 0;
+        for (int i = 0; i < pipe_index; i++){
+            new_input.words[index] = words.words[i];
+            index++;
+            new_input.size = index;
         }
-        exit(0);
+        execute_command(new_input);
     }
     else {
-        //Parent executing... Wait for both children to execute
-        sleep(10);
-        printf("running parent \n");
+        fflush(stdout);
+
+        c2 = fork();
+        if (c2 < 0){
+            printf("Forked failed.\n");
+            return 0;
+        }
+
+        if (c2 == 0){
+            //Child 2 executing
+            close(fd[1]); 
+            dup2(fd[0], STDOUT_FILENO); 
+            close(fd[0]);
+            //Run subcommand
+            struct Words new_input;
+            int index = 0;
+            for (int i = 0; i < pipe_index; i++){
+                new_input.words[index] = words.words[i];
+                index++;
+                new_input.size = index;
+            }
+            execute_command(new_input);
+        }
+        else{
+            //Parent executing
+            wait(NULL);
+            wait(NULL);
+            printf("running parent \n");
+            return 1;
+        }
     }
-    return 1;
 }
