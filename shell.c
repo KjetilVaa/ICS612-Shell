@@ -8,7 +8,7 @@
 typedef int bool;
 #define TRUE 1
 #define FALSE 0
-#define CL_MAX 20
+#define CL_MAX 1000
 
 int main(int argc, char **argv)
 {

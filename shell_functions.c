@@ -14,8 +14,10 @@ void type_prompt(){
 };
 
 void execute_systemcall(struct Words input_words) {
-    pid_t pid = fork();
-    
+    input_words.words[input_words.size] = 0;
+    execvp(input_words.words[0], input_words.words);
+
+    /*pid_t pid = fork();
     if (pid == -1){
         printf("Forking child failed\n");
         return;
@@ -28,6 +30,7 @@ void execute_systemcall(struct Words input_words) {
     } else {
         wait(NULL);
     }
+    */
 }
 
 void get_input(char *input_line, int MAX){
@@ -60,7 +63,7 @@ void execute_command(struct Words input_words){
     
     bool found_keyword = 0;
 
-    for(int i; i < input_words.size; i++ ) {
+    for(int i = 0; i < input_words.size; i++ ) {
         if( !(strcmp("|", input_words.words[i])) ) {
             //Run pipe function with the two commands
             execute_pipe(input_words, i);
@@ -81,7 +84,6 @@ void execute_command(struct Words input_words){
     }
 
     if (!found_keyword){
-        printf("This is a regular system call \n");
         execute_systemcall(input_words);
     }
     
@@ -89,7 +91,6 @@ void execute_command(struct Words input_words){
 
 
 struct Words parser(char* input_line){
-    printf("Parsing: %s", input_line);
     struct Words input_words;
     int index = 0;
     char* token = strtok(input_line, " ");
@@ -113,16 +114,14 @@ char* last_char_del(char* str)
 
 bool execute_pipe(struct Words words, int pipe_index){
     // fd[0] --> read-end, fd[1] --> write-end
-    int fd[2];
     pid_t c1, c2;
-    int status;
+    int fd[2];
     
-    if (pipe(fd) == -1){
+    if (pipe(fd) < 0){
         printf("One of the two pipes failed.\n");
         return 0;
     }
 
-    fflush(stdout);
     c1 = fork();
     if (c1 < 0){
         printf("Forked failed.\n");
@@ -131,8 +130,8 @@ bool execute_pipe(struct Words words, int pipe_index){
 
     if (c1 == 0){
         //Child executing
-        close(fd[0]); 
         dup2(fd[1], STDOUT_FILENO); 
+        close(fd[0]);
         close(fd[1]);
         //Run subcommand
         struct Words new_input;
@@ -145,7 +144,6 @@ bool execute_pipe(struct Words words, int pipe_index){
         execute_command(new_input);
     }
     else {
-        fflush(stdout);
 
         c2 = fork();
         if (c2 < 0){
@@ -155,13 +153,13 @@ bool execute_pipe(struct Words words, int pipe_index){
 
         if (c2 == 0){
             //Child 2 executing
-            close(fd[1]); 
-            dup2(fd[0], STDOUT_FILENO); 
+            dup2(fd[0], STDIN_FILENO); 
+            close(fd[1]);
             close(fd[0]);
             //Run subcommand
             struct Words new_input;
             int index = 0;
-            for (int i = 0; i < pipe_index; i++){
+            for (int i = pipe_index +1; i < words.size; i++){
                 new_input.words[index] = words.words[i];
                 index++;
                 new_input.size = index;
@@ -169,10 +167,11 @@ bool execute_pipe(struct Words words, int pipe_index){
             execute_command(new_input);
         }
         else{
+            close(fd[0]);
+            close(fd[1]);
             //Parent executing
             wait(NULL);
             wait(NULL);
-            printf("running parent \n");
             return 1;
         }
     }
