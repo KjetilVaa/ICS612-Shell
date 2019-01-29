@@ -16,18 +16,12 @@ int main(int argc, char **argv)
         char input_line[CL_MAX];
         
         type_prompt();  /*display prompt on the screen */
-        if(get_input(input_line, CL_MAX)){
-            struct Words input_words1;
-            input_words1 = parser(input_line);
-            execute_command(input_words1);
-        };
+        get_input(input_line, CL_MAX);
         
         struct Words test = {
             {"exit"},
             1
-        };
-        //execute_command(test);
-        
+        };        
     }
     return 0;
 };

@@ -6,12 +6,14 @@
 #include <string.h>
 #include <shell_functions.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 void type_prompt(){
     printf("$ ");
 };
 
-bool get_input(char *input_line, int MAX){
+void get_input(char *input_line, int MAX){
     char *str;
     str = fgets(input_line, MAX, stdin);
     
@@ -19,7 +21,6 @@ bool get_input(char *input_line, int MAX){
     if (!(strcmp("\n", str))){
         input_line = NULL;
         printf("entred 0\n");
-        return 0;
     }
     else {
         // Give error if input line does not end with new line - input longer than MAX
@@ -27,7 +28,9 @@ bool get_input(char *input_line, int MAX){
             printf("ERROR: Size of command line input must be less than 1000 characters\n");
             exit(0);
         };
-        return 1;
+        struct Words input_words1;
+        input_words1 = parser(input_line);
+        execute_command(input_words1);
     };
 };
 
@@ -38,20 +41,31 @@ void execute_command(struct Words input_words){
         exit(0);
     }
     
+    bool found_keyword = 0;
+
     for(int i; i < input_words.size; i++ ) {
-        if( !(strcmp(">", input_words.words[i])) ) {
-            //do
+        if( !(strcmp("|", input_words.words[i])) ) {
+            //Run pipe function with the two commands
+            execute_pipe(input_words, i);
+            found_keyword = 1;
         }
         else if( !(strcmp("<", input_words.words[i])) ) {
+            found_keyword = 1;
             //do
         }
-        else if( !(strcmp("|", input_words.words[i])) ) {
+        else if( !(strcmp(">", input_words.words[i])) ) {
+            found_keyword = 1;
             //do
         }
         else if( !(strcmp("&", input_words.words[i])) ) {
+            found_keyword = 1;
             //do
         }
-    };
+    }
+
+    if (!found_keyword){
+        printf("This is a regular system call \n");
+    }
     
 };
 
@@ -73,4 +87,37 @@ struct Words parser(char* input_line){
     };
            
     return input_words;
+}
+
+bool execute_pipe(struct Words words, int pipe_index){
+    // fd[0] --> read-end, fd[1] --> write-end
+    int fd[2];
+    pid_t c1, c2;
+    int status;
+    
+    if (pipe(fd) == -1){
+        printf("One of the two pipes failed.\n");
+        return 0;
+    }
+    fflush(stdout);
+    c1 = fork();
+    if (c1 < 0){
+        printf("Forked failed.\n");
+        return 0;
+    }
+
+    if (c1 == 0){
+        //Child executing
+        printf("Child executing! \n");
+        for (int i = 0; i++; i < pipe_index){
+            printf("%s\n", words.words[i]);
+        }
+        exit(0);
+    }
+    else {
+        //Parent executing... Wait for both children to execute
+        sleep(10);
+        printf("running parent \n");
+    }
+    return 1;
 }
