@@ -13,6 +13,23 @@ void type_prompt(){
     printf("$ ");
 };
 
+void execute_systemcall(struct Words input_words) {
+    pid_t pid = fork();
+    
+    if (pid == -1){
+        printf("Forking child failed\n");
+        return;
+    } else if (pid == 0) {
+        input_words.words[input_words.size] = 0;
+        if (execvp(input_words.words[0], input_words.words) > 0) {
+            printf("System call failed\n");
+        }
+        exit(0);
+    } else {
+        wait(NULL);
+    }
+}
+
 void get_input(char *input_line, int MAX){
     char *str;
     str = fgets(input_line, MAX, stdin);
@@ -65,9 +82,11 @@ void execute_command(struct Words input_words){
 
     if (!found_keyword){
         printf("This is a regular system call \n");
+        execute_systemcall(input_words);
     }
     
 };
+
 
 struct Words parser(char* input_line){
     struct Words input_words;
@@ -80,13 +99,15 @@ struct Words parser(char* input_line){
         token = strtok(NULL, " ");
     }
     
-    printf("Number of words: %d\n", input_words.size);
-    printf("The word(s) are: \n");
-    for(int i = 0; i < input_words.size; i++ ) {
-        printf("%s\n", input_words.words[i]);
-    };
-           
+    input_words.words[input_words.size - 1] = last_char_del(input_words.words[input_words.size - 1]);
+    
     return input_words;
+}
+
+char* last_char_del(char* str)
+{
+    str[strlen(str) - 1] = '\0';
+    return str;
 }
 
 bool execute_pipe(struct Words words, int pipe_index){
