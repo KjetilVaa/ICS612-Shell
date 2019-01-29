@@ -214,40 +214,25 @@ bool execute_lcroc(struct Words words, int croc_index){
             new_input.size = index;
         }
         execute_command(new_input, 0);
-    }
-    else {
         
-        c2 = fork();
-        if (c2 < 0){
-            printf("Forked failed.\n");
-            return 0;
+    } else{
+        //Parent executing
+        wait(NULL);
+        close(fd[1]);
+        // Creating file for output
+        FILE *f = fopen(words.words[croc_index+1], "w");
+        if (f == NULL) {
+            printf("Error opening file!\n");
+            exit(1);
         }
+        // Reading the string from the child
+        char buffer[1000];
+        int n;
+        n = read(fd[0], buffer, 1000);
+        close(fd[0]);
+        fprintf(f, "%s", buffer);
+        fclose(f);
         
-        if (c2 == 0){
-            //Child 2 executing
-            dup2(fd[0], STDIN_FILENO);
-            close(fd[1]);
-            close(fd[0]);
-            
-            //Run subcommand
-            FILE *f = fopen(words.words[croc_index+1], "w");
-            if (f == NULL)
-            {
-                printf("Error opening file!\n");
-                exit(1);
-            }
-            char buffer[1000];
-            
-            read(STDIN_FILENO, buffer, 1000);
-            fprintf(f,"Some text: %s\n", buffer);
-        }
-        else{
-            close(fd[0]);
-            close(fd[1]);
-            //Parent executing
-            wait(NULL);
-            wait(NULL);
-            return 1;
-        }
+        return 1;
     }
 }
