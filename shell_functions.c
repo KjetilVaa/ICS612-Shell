@@ -86,7 +86,7 @@ void execute_command(struct Words input_words, bool flag){
         }
         else if( !(strcmp("&", input_words.words[i])) ) {
             found_keyword = 1;
-            //do
+            execute_in_background(input_words, i);
         }
     }
 
@@ -234,5 +234,44 @@ bool execute_lcroc(struct Words words, int croc_index){
         fclose(f);
         
         return 1;
+    }
+}
+
+bool execute_in_background(struct Words words, int background_index){
+    
+    pid_t c1;
+
+    struct Words new_input;
+    int index = 0;
+    for (int i = 0; i < background_index; i++){
+        new_input.words[index] = words.words[i];
+        index++;
+        new_input.size = index;
+    }
+
+    c1 = fork();
+    if ( c1 < 0){
+        printf("Fork failed\n");
+    }
+
+    if (c1 == 0){
+        //Child running
+        execute_command(new_input, 0);
+    }
+    else{
+        if ((words.size - 1) > background_index){
+            //Command after & needs to run in parallell
+            struct Words new_input;
+            int index = 0;
+            for (int i = background_index + 1; i < words.size; i++){
+                new_input.words[index] = words.words[i];
+                index++;
+                new_input.size = index;
+            }
+            execute_command(new_input, 1);
+        }
+        else{
+            return 1;
+        }
     }
 }
