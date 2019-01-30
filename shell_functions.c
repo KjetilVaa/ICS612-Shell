@@ -76,6 +76,8 @@ void execute_command(struct Words input_words, bool flag){
             found_keyword = 1;
         }
         else if( !(strcmp("<", input_words.words[i])) ) {
+            //Run croc function with the command and the file output is saved to
+            execute_rcroc(input_words, i);
             found_keyword = 1;
             //do
         }
@@ -234,5 +236,71 @@ bool execute_lcroc(struct Words words, int croc_index){
         fclose(f);
         
         return 1;
+    }
+}
+
+bool execute_rcroc(struct Words words, int croc_index){
+    // fd[0] --> read-end, fd[1] --> write-end
+    pid_t c1, c2;
+    int fd[2];
+    
+    if (pipe(fd) < 0){
+        printf("One of the two pipes failed.\n");
+        return 0;
+    }
+    
+    c1 = fork();
+    if (c1 < 0){
+        printf("Forked failed.\n");
+        return 0;
+    }
+    
+    if (c1 == 0){
+        //Child executing
+        dup2(fd[1], STDOUT_FILENO);
+        close(fd[0]);
+        close(fd[1]);
+        //Run subcommand
+        struct Words new_input;
+        int index = 1;
+        new_input.words[0] = "cat";
+        for (int i = croc_index+1; i < words.size ; i++){
+            new_input.words[index] = words.words[i];
+            index++;
+            new_input.size = index;
+        }
+        execute_command(new_input, 0);
+    }
+    else {
+        
+        c2 = fork();
+        if (c2 < 0){
+            printf("Forked failed.\n");
+            return 0;
+        }
+        
+        if (c2 == 0){
+            //Child 2 executing
+            dup2(fd[0], STDIN_FILENO);
+            close(fd[1]);
+            close(fd[0]);
+            //Run subcommand
+            struct Words new_input;
+            int index = 0;
+            for (int i = 0; i < croc_index; i++){
+                new_input.words[index] = words.words[i];
+                index++;
+                new_input.size = index;
+            }
+            execute_command(new_input, 0);
+        }
+        else{
+            close(fd[0]);
+            close(fd[1]);
+            //Parent executing
+            wait(NULL);
+            wait(NULL);
+            return 1;
+        }
     }
 }
