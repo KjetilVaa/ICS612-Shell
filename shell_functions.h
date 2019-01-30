@@ -26,7 +26,12 @@ void execute_command(struct Words words, bool flag);
 // Handles pipes
 bool execute_pipe(struct Words words, int pipe_index);
 
+// Handles left crocodile sign
 bool execute_lcroc(struct Words words, int croc_index);
+
+// Handles right croc sign
+bool execute_rcroc(struct Words words, int croc_index);
 
 // Fork process and execute in background
 bool execute_in_background(struct Words words, int background_index);
+
