@@ -1,6 +1,13 @@
+/*
+ * Authors:  Oda Scheen Kiese and Kjetil Vaagen
+ * Purpose:  to learn about shells
+ *           to implement a simple shell
+ *           to practice using C, fork, and exec
+ * Language: C
+ */
+
 #include <stdio.h>
 #include <shell_functions.h>
-/* for use of fork, waitpid, pid etc */
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -17,11 +24,6 @@ int main(int argc, char **argv)
         
         type_prompt();  /*display prompt on the screen */
         get_input(input_line, CL_MAX);
-        
-        struct Words test = {
-            {"exit"},
-            1
-        };        
     }
     return 0;
 };

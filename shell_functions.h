@@ -1,4 +1,13 @@
+/*
+ * Authors:  Oda Scheen Kiese and Kjetil Vaagen
+ * Purpose:  to learn about shells
+ *           to implement a simple shell
+ *           to practice using C, fork, and exec
+ * Language: C
+ */
+
 typedef int bool;
+
 #define TRUE 1
 #define FALSE 0
 
@@ -19,10 +28,6 @@ struct Words parser(char *input_line);
 // Deletes last char in a string
 char* last_char_del(char* str);
 
-// Unfinished - Handles commands given from the terminal.
-// Flag indicated whether forking has to be done or not
-void execute_command(struct Words words, bool flag);
-
 // Handles pipes
 bool execute_pipe(struct Words words, int pipe_index);
 
@@ -35,3 +40,6 @@ bool execute_rcroc(struct Words words, int croc_index);
 // Fork process and execute in background
 bool execute_in_background(struct Words words, int background_index);
 
+// Handles commands given from the terminal.
+// Flag indicated whether forking has to be done or not
+void execute_command(struct Words words, bool flag);
